@@ -31,7 +31,7 @@ public class SetStatusServlet extends HttpServlet {
 
         resp.setStatus(200);
         if (session.getAttribute("userStatus") != null) {
-            session.removeAttribute("status");
+            session.removeAttribute("userStatus");
         }
         session.setAttribute("userStatus", req.getHeader("userStatus"));
     }
