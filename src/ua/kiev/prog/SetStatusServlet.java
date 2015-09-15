@@ -25,14 +25,13 @@ public class SetStatusServlet extends HttpServlet {
         if (userSession == null || !userSession.equals(userCookie)) { // invalid user, sessionId or smthng else
             System.out.println("Session User mismatch Cookie User");
             resp.setStatus(401);
+            resp.setHeader("errorInfo", "Invalid sender");
             session.invalidate();
             return;
         }
 
         resp.setStatus(200);
-        if (session.getAttribute("userStatus") != null) {
-            session.removeAttribute("userStatus");
-        }
+        session.removeAttribute("userStatus");
         session.setAttribute("userStatus", req.getHeader("userStatus"));
     }
 }

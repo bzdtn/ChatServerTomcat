@@ -13,7 +13,7 @@ public class LoginServlet extends HttpServlet {
 
     static final Map<String, String> credentials = new HashMap<>();
 
-    static { // hardcode login credentials
+    static { // hardcode login rooms
         credentials.put("user", "qwerty");
         credentials.put("admin", "qazwsx");
         credentials.put("ivan", "1234");
@@ -23,8 +23,14 @@ public class LoginServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String login = req.getHeader("login");
         String password = req.getHeader("password");
-        if(Sessions.isLoggedIn(login)){
+        if (login == null || password == null || JoinRoomServlet.isRoomRegistered(login)) {
+            resp.setStatus(400);// bad request: no login or no password or login=some room name
+            resp.setHeader("errorInfo", "Invalid request: no login or no password");
+            return;
+        }
+        if (Sessions.isLoggedIn(login)) {
             resp.setStatus(409); // CONFLICT the user already logged in
+            resp.setHeader("errorInfo", "Invalid login: user already logged in");
             return;
         }
         String temp = credentials.get(login);
@@ -37,9 +43,16 @@ public class LoginServlet extends HttpServlet {
 
             session.setAttribute("user", login);
             session.setMaxInactiveInterval(30 * 60);
+            Sessions.addUser(login);
         } else {
             resp.setStatus(401); //401 Unauthorized wrong password
+            resp.setHeader("errorInfo", "User info not found or invalid password");
         }
     }
+
+    public static boolean isRegistered(String user) {
+        return credentials.containsKey(user);
+    }
+
 }
 

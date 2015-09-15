@@ -67,6 +67,24 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
         <url-pattern>/getstatus</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>JoinRoom</servlet-name>
+        <servlet-class>ua.kiev.prog.JoinRoomServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>JoinRoom</servlet-name>
+        <url-pattern>/joinroom</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ExitRoom</servlet-name>
+        <servlet-class>ua.kiev.prog.ExitRoomServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ExitRoom</servlet-name>
+        <url-pattern>/exitroom</url-pattern>
+    </servlet-mapping>
+
     <listener>
         <listener-class>ua.kiev.prog.Sessions</listener-class>
     </listener>

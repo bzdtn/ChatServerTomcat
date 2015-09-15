@@ -11,21 +11,21 @@ public class GetUsersServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession();
-        String userSession = (String)session.getAttribute("user");
-
-        String userCookie = null;
+        String sessionUser = (String)session.getAttribute("user");
+        String cookieUser = null;
         Cookie[] cookies = req.getCookies();
         if(cookies != null){
             for(Cookie cookie: cookies){
                 if("user".equals(cookie.getName())){
-                    userCookie = cookie.getValue();
+                    cookieUser = cookie.getValue();
                     break;
                 }
             }
         }
-        if (userSession == null || !userSession.equals(userCookie)) { // invalid user, sessionId or smthng else
+        if (sessionUser == null || !sessionUser.equals(cookieUser)) { // invalid user, sessionId or smthng else
             System.out.println("Session User mismatch Cookie User");
             resp.setStatus(401);
+            resp.setHeader("errorInfo", "Invalid sender");
             session.invalidate();
             return;
         }
@@ -35,10 +35,9 @@ public class GetUsersServlet extends HttpServlet {
         if (res.length() > 0) {
             resp.addHeader("usersList", res);
         }
-
         Message msg = new Message();
         msg.setFrom("Server");
-        msg.setTo(userSession);
+        msg.setTo(sessionUser);
         msg.setText(Sessions.currentUsers());
         msg.setDate(new Date());
         MessageList.getInstance().add(msg);

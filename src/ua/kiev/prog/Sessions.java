@@ -12,6 +12,7 @@ import java.util.*;
 //HttpSessionCollector
 public class Sessions implements HttpSessionListener {
     private static final Map<String, HttpSession> sessions = new HashMap<>();
+    private static final List<String> usersOnline = new ArrayList<>();
 
     @Override
     public void sessionCreated(HttpSessionEvent event) {
@@ -23,7 +24,11 @@ public class Sessions implements HttpSessionListener {
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession();
-        System.out.println("Session destroy " + session.getId() + " " + session.getAttribute("user"));
+        String user = (String)session.getAttribute("user");
+        if (user != null) {
+            usersOnline.remove(user);
+        }
+        System.out.println("Session destroyed " + session.getId() + " " + user);
         sessions.remove(session.getId());
     }
 
@@ -47,11 +52,19 @@ public class Sessions implements HttpSessionListener {
     }
 
     public static String getUserStatus(String user) {
-        for(HttpSession s :sessions.values()) {
+        for(HttpSession s: sessions.values()) {
             if (user.equals(s.getAttribute("user"))) {
                 return (String)s.getAttribute("userStatus");
             }
         }
         return null;
+    }
+
+    public static void addUser(String user){
+        usersOnline.add(user);
+    }
+
+    public static boolean isUserOnline(String user) {
+        return usersOnline.contains(user);
     }
 }

@@ -3,6 +3,10 @@ package ua.kiev.prog;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class GetListServlet extends HttpServlet {
 
@@ -12,21 +16,21 @@ public class GetListServlet extends HttpServlet {
         throws IOException
     {
         HttpSession session = req.getSession();
-        String userSession = (String)session.getAttribute("user");
-
-        String userCookie = null;
+        String sessionUser = (String)session.getAttribute("user");
+        String cookieUser = null;
         Cookie[] cookies = req.getCookies();
         if(cookies != null){
             for(Cookie cookie: cookies){
                 if("user".equals(cookie.getName())){
-                    userCookie = cookie.getValue();
+                    cookieUser = cookie.getValue();
                     break;
                 }
             }
         }
-        if (userSession == null || !userSession.equals(userCookie)) { // invalid user, sessionId or smthng else
+        if (sessionUser == null || !sessionUser.equals(cookieUser)) { // invalid user, sessionId or something else
             System.out.println("Session User mismatch Cookie User");
             resp.setStatus(401);
+            resp.setHeader("errorInfo", "Invalid sender");
             session.invalidate();
             return;
         }
@@ -34,10 +38,11 @@ public class GetListServlet extends HttpServlet {
         resp.setStatus(200);
         String fromStr = req.getParameter("from");
         int from = Integer.parseInt(fromStr);
-
-        int[] msgNum = {0}; // number of messages in the list
-        String json = msgList.toJSON(from, userSession, msgNum); // select messages 'to' or/and 'from' this user
-        resp.addIntHeader("message_number", msgNum[0]);
+        int[] getMsgNum = {0}; // to get number of messages in the list
+        String attrRooms = (String)session.getAttribute("rooms");
+        List<String> rooms = (attrRooms == null) ? new ArrayList<>(): (Arrays.asList(attrRooms.split(",")));
+        String json = msgList.toJSON(from, sessionUser, rooms, getMsgNum); // select messages 'to' or/and 'from' this user
+        resp.addIntHeader("messageNumber", getMsgNum[0]);
         if (json != null) {
             OutputStream os = resp.getOutputStream();
             os.write(json.getBytes());

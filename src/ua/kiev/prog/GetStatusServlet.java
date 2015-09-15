@@ -12,37 +12,41 @@ public class GetStatusServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         HttpSession session = req.getSession();
-        String userSession = (String)session.getAttribute("user");
-
-        String userCookie = null;
+        String sessionUser = (String)session.getAttribute("user");
+        String cookieUser = null;
         Cookie[] cookies = req.getCookies();
         if(cookies != null){
             for(Cookie cookie: cookies){
                 if("user".equals(cookie.getName())){
-                    userCookie = cookie.getValue();
+                    cookieUser = cookie.getValue();
                     break;
                 }
             }
         }
-        if (userSession == null || !userSession.equals(userCookie)) { // invalid user, sessionId or smthng else
+        if (sessionUser == null || !sessionUser.equals(cookieUser)) { // invalid user, sessionId or smthng else
             System.out.println("Session User mismatch Cookie User");
             resp.setStatus(401);
+            resp.setHeader("errorInfo", "Invalid sender");
             session.invalidate();
             return;
         }
 
-        resp.setStatus(200);
         String user = req.getParameter("user");
-        String status = Sessions.getUserStatus(user);
+        if (!Sessions.isUserOnline(user)) {// possible problems in multithreading
+            resp.setStatus(400);
+            resp.setHeader("errorInfo", "Invalid request: user not found");
+            return;
+        }
 
+        resp.setStatus(200);
+        String status = Sessions.getUserStatus(user);
         Message msg = new Message();
         msg.setFrom("Server");
-        msg.setTo(userSession);
+        msg.setTo(sessionUser);
         if (status != null){
-//            resp.addHeader("userStatus", status);
             msg.setText("User: " + user + ", status: " + status);
         } else {
-            msg.setText("No status set or wrong user name");
+            msg.setText("User: " + user + ", no status set");
         }
         msg.setDate(new Date());
         MessageList.getInstance().add(msg);

@@ -32,14 +32,15 @@ public class MessageList {
             return null;
     }
 
-    public synchronized String toJSON(int n, String user, int[] msgNum) {
+    public synchronized String toJSON(int n, String user, List<String> rooms, int[] msgNum) {
         List<Message> res = new ArrayList<>();
         Message msg = null;
         msgNum[0] = list.size();
         for (int i = n; i < list.size(); i++) {
             msg = list.get(i);
             // for ALL (to=null), for User, from User
-            if (msg.getTo() == null || msg.getTo().equals(user) || msg.getFrom().equals(user)) {
+            String to = msg.getTo();
+            if (to == null || msg.getFrom().equals(user) || to.equals(user) || rooms.contains(to)) {
                 res.add(msg);
             }
         }
